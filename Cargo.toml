@@ -1,8 +1,11 @@
-[package]
-name = "sms_portal_backend_rs"
-version = "0.1.0"
-edition = "2021"
+[workspace.lints.rust]
+unsafe_code = "forbid"
+unused = "allow" # For experimental dev.
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+resolver = "2"
+members = [ "crates/libs/lib-auth", "crates/libs/lib-core", "crates/libs/lib-rpc", "crates/libs/lib-utils",
 
-[dependencies]
+  # --- Application Services
+  "crates/services/web-server"
+]
