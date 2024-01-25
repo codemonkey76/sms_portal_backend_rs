@@ -4,8 +4,19 @@ unused = "allow" # For experimental dev.
 
 [workspace]
 resolver = "2"
-members = [ "crates/libs/lib-auth", "crates/libs/lib-core", "crates/libs/lib-rpc", "crates/libs/lib-utils",
+members = [
+   "crates/libs/lib-auth",
+    "crates/libs/lib-core", 
+    "crates/libs/lib-rpc", 
+    "crates/libs/lib-utils",
 
   # --- Application Services
   "crates/services/web-server"
 ]
+
+[workspace.dependencies]
+# -- Serde
+serde_with = {version = "3", features = ["time_0_3"] }
+# -- Data
+modql = { version = "0.3.7", features = ["with-sea-query"]}
+derive_more = {version = "1.0.0-beta", features = ["from", "display"] }

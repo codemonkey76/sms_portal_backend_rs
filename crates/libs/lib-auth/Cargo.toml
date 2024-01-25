@@ -6,6 +6,28 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# -- App Libs
+lib-utils = { path = "../../libs/lib-utils" }
+
+# -- Async
+tokio = { version = "1.35.1", features = ["full"] }
+
+# -- Json
+serde = { version = "1.0.195", features = ["derive"] }
+
+# -- Hashing (pwd-scheme01 & Token)
+hmac = "0.12.1"
+sha2 = "0.10.8"
+
+# -- Hashing (pwd-scheme02)
+argon2 = { version = "0.5.3", features = ["std"] }
+
+# -- Others
+uuid = { version = "1.7.0", features = ["v4", "fast-rng"] }
+lazy-regex = "3.1.0"
+derive_more = { workspace = true }
+enum_dispatch = "0.3.12"
+
 
 [lints]
 workspace = true

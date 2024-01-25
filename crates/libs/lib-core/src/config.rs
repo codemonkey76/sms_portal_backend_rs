@@ -1,5 +1,7 @@
 use std::sync::OnceLock;
 
+use lib_utils::env::get_env;
+
 pub fn core_config() -> &'static CoreConfig {
     static INSTANCE: OnceLock<CoreConfig> = OnceLock::new();
 
@@ -19,7 +21,7 @@ pub struct CoreConfig {
 }
 
 impl CoreConfig {
-	fn load_from_env() -> lib_utils::envs::Result<CoreConfig> {
+	fn load_from_env() -> lib_utils::env::Result<CoreConfig> {
 		Ok(CoreConfig {
 			// -- Db
 			DB_URL: get_env("SERVICE_DB_URL")?,

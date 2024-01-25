@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+base64 = "0.21.7"
+time = { version = "0.3.31", features = ["formatting", "parsing", "serde"] }
 
 [lints]
 workspace = true
