@@ -3,18 +3,24 @@ name = "lib-core"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+doctest = false
+
+[lints]
+workspace = true
 
 [dependencies]
 # -- App Libs
 lib-utils = { path = "../../libs/lib-utils" }
 lib-auth = { path = "../../libs/lib-auth" }
 
+# -- Async
+tokio = { version = "1.35.1", features = ["full"] }
+
 # -- Json
 serde = { version = "1.0.195", features = ["derive"] }
 serde_json = "1.0.111"
 serde_with = { workspace = true }
-
 
 # -- Data
 sea-query = "0.30.7"
@@ -22,12 +28,13 @@ sea-query-binder = { version = "0.5.0", features = ["sqlx-postgres", "with-uuid"
 sqlx = { version = "0.7.3", features = ["macros", "runtime-tokio", "postgres", "uuid"] }
 modql = { workspace = true }
 
+# -- Tracing
+tracing = "0.1.40"
+
 # -- Others
 uuid = { version = "1.7.0", features = ["v4", "fast-rng"] }
 time = { version = "0.3.31", features = ["formatting", "parsing", "serde"] }
 derive_more = { workspace = true }
-tokio = { version = "1.35.1", features = ["full"] }
 
-
-[lints]
-workspace = true
+[dev-dependencies]
+serial_test = "3.0.0"
