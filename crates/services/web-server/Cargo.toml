@@ -23,10 +23,17 @@ serde_with = "3"
 axum = { version = "0.7.4", features = ["macros"] }
 tower-http = { version = "0.5.1", features = ["fs"] }
 tower-cookies = "0.10.0"
+
+# -- Tracing
+tracing = "0.1.40"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # -- Other
+time = "0.3.31"
 uuid = { version = "1", features = ["v4","fast-rng"] }
 strum_macros = "0.25"
 derive_more = { version = "1.0.0-beta", features = ["from"] }
-tracing = "0.1.40"
+
+[dev-dependencies]
+httpc-test = "0.1.9"
+time = "0.3.31"
