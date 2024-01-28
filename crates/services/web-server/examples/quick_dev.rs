@@ -36,7 +36,16 @@ async fn main() -> Result<()> {
 	};
 
 
-	rpc_method(&hc, 1, "create_customer", &params).await?;
+	let result = rpc_method(&hc, 1, "create_customer", &params).await?;
+
+	let id = result.json_value::<i64>("/result/data/id")?;
+	println!("Got ID: {id}");
+	let params = map! {
+		"id" => result.json_value::<i64>("/result/data/id")?,
+		"name" => "Edited"
+	};
+
+	rpc_method(&hc, 2, "update_customer", &params).await?;
 
 	logout(&hc).await?;
 
@@ -47,16 +56,19 @@ async fn main() -> Result<()> {
 
 
 
-async fn rpc_method(hc: &Client, id: i64, method: &str, params: &Map<String, Value>) -> Result<()> {
-	hc.do_post("/api/rpc", json!({
+async fn rpc_method(hc: &Client, id: i64, method: &str, params: &Map<String, Value>) -> Result<Response> {
+	let result = hc.do_post("/api/rpc", json!({
 		"id": id,
 		"method": method.to_string(),
 		"params": {
 			"data": params
 		}
-	})).await?.print().await?;
+	})).await?;
+	
+	result.print().await?;
 
-	Ok(())
+
+	Ok(result)
 }
 
 async fn login(hc: &Client) -> Result<()> {
