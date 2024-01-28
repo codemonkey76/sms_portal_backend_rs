@@ -14,6 +14,14 @@ use super::base::DbBmc;
 
 // region:    --- Customer Types
 
+
+/// Trait to implement on entities that have a conv_id
+/// This will allow Ctx to be upgraded with the corresponding conv_id for
+/// future access control.
+pub trait CustomerScoped {
+	fn customer_id(&self) -> i64;
+}
+
 #[serde_as]
 #[derive(Debug, Clone, Fields, FromRow, Serialize)]
 pub struct Customer {

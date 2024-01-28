@@ -3,14 +3,63 @@
 pub type Result<T> = core::result::Result<T, Error>;
 pub type Error = Box<dyn std::error::Error>; // For examples.
 
-use serde_json::{json, Value};
+
+
+use httpc_test::{Client, Response};
+use serde_json::{json, Value, Map};
+
+
+macro_rules! map {
+	() => {
+		serde_json::Map::new()
+	};
+
+	($($key:expr => $value:expr),+ $(,)?) => {{
+		let mut temp_map = serde_json::Map::new();
+		$(
+			temp_map.insert($key.to_string(), serde_json::Value::String($value.to_string()));
+		)+
+		temp_map
+	}};
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
 	let hc = httpc_test::new_client("http://localhost:8080")?;
 
-	// hc.do_get("/index.html").await?.print().await?;
+	login(&hc).await?;
 
+
+	let params = map! {
+		"name" => "Test Customer",
+		"sender_id" => "abc123"
+	};
+
+
+	rpc_method(&hc, 1, "create_customer", &params).await?;
+
+	logout(&hc).await?;
+
+
+
+	Ok(())
+}
+
+
+
+async fn rpc_method(hc: &Client, id: i64, method: &str, params: &Map<String, Value>) -> Result<()> {
+	hc.do_post("/api/rpc", json!({
+		"id": id,
+		"method": method.to_string(),
+		"params": {
+			"data": params
+		}
+	})).await?.print().await?;
+
+	Ok(())
+}
+
+async fn login(hc: &Client) -> Result<()> {
 	// -- Login
 	let req_login = hc.do_post(
 		"/api/login",
@@ -19,75 +68,14 @@ async fn main() -> Result<()> {
 			"pwd": "welcome"
 		}),
 	);
-	req_login.await?.print().await?;
 
-	// -- Create Agent
-	let req_create_agent = hc.do_post(
-		"/api/rpc",
-		json!({
-			"id": 1,
-			"method": "create_agent",
-			"params": {
-				"data": {
-					"name": "agent AAA"
-				}
-			}
-		}),
-	);
-	let result = req_create_agent.await?;
-	result.print().await?;
-	let agent_id = result.json_value::<i64>("/result/data/id")?;
+	req_login.await?;
 
-	// -- Get Agent
-	let req_get_agent = hc.do_post(
-		"/api/rpc",
-		json!({
-			"id": 1,
-			"method": "get_agent",
-			"params": {
-					"id": agent_id
-			}
-		}),
-	);
-	let result = req_get_agent.await?;
-	result.print().await?;
+	Ok(())
 
-	// -- Create Conv
-	let req_create_conv = hc.do_post(
-		"/api/rpc",
-		json!({
-			"id": 1,
-			"method": "create_conv",
-			"params": {
-				"data": {
-					"agent_id": agent_id,
-					"title": "conv 01"
-				}
-			}
-		}),
-	);
-	let result = req_create_conv.await?;
-	result.print().await?;
-	let conv_id = result.json_value::<i64>("/result/data/id")?;
+}
 
-	// -- Create ConvMsg
-	let req_create_conv = hc.do_post(
-		"/api/rpc",
-		json!({
-			"id": 1,
-			"method": "add_conv_msg",
-			"params": {
-				"data": {
-					"conv_id": conv_id,
-					"content": "This is the first comment"
-				}
-			}
-		}),
-	);
-	let result = req_create_conv.await?;
-	result.print().await?;
-	let conv_msg_id = result.json_value::<i64>("/result/data/id")?;
-
+async fn logout(hc: &Client) -> Result<()> {
 	// -- Logoff
 	let req_logoff = hc.do_post(
 		"/api/logoff",
@@ -95,7 +83,9 @@ async fn main() -> Result<()> {
 			"logoff": true
 		}),
 	);
-	req_logoff.await?.print().await?;
-
+	
+	req_logoff.await?;
+	
 	Ok(())
+
 }
