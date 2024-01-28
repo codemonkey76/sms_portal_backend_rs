@@ -104,7 +104,7 @@ pub struct UserFilter {
 pub struct UserBmc;
 
 impl DbBmc for UserBmc {
-	const TABLE: &'static str = "user";
+	const TABLE: &'static str = "users";
 }
 
 impl UserBmc {

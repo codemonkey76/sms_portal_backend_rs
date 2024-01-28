@@ -134,7 +134,7 @@ pub struct ConvFilter {
 pub struct ConvBmc;
 
 impl DbBmc for ConvBmc {
-	const TABLE: &'static str = "conv";
+	const TABLE: &'static str = "conversations";
 
 	fn has_owner_id() -> bool {
 		true

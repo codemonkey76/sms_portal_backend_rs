@@ -114,7 +114,7 @@ pub struct ConvMsgFilter {
 pub struct ConvMsgBmc;
 
 impl DbBmc for ConvMsgBmc {
-	const TABLE: &'static str = "conv_msg";
+	const TABLE: &'static str = "conversation_messages";
 }
 
 // Note: The strategy here is to not implement `ConvMsgBmc` CRUD functions,

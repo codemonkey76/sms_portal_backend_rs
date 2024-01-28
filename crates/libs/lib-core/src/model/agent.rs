@@ -68,7 +68,7 @@ pub struct AgentFilter {
 pub struct AgentBmc;
 
 impl DbBmc for AgentBmc {
-	const TABLE: &'static str = "agent";
+	const TABLE: &'static str = "agents";
 
 	fn has_owner_id() -> bool {
 		true

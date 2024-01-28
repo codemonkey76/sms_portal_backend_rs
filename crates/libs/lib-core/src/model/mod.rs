@@ -30,6 +30,7 @@ pub mod conv_msg;
 pub mod conv_user;
 pub mod modql_utils;
 pub mod user;
+pub mod customer;
 
 pub use self::error::{Error, Result};
 
