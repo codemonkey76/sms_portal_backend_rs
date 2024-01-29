@@ -1,0 +1,1 @@
+cargo watch -q -c -w crates/ -p web-server -x run
