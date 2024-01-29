@@ -9,46 +9,52 @@ use httpc_test::{Client, Response};
 use serde_json::{json, Value, Map};
 
 
-macro_rules! map {
-	() => {
-		serde_json::Map::new()
-	};
-
-	($($key:expr => $value:expr),+ $(,)?) => {{
-		let mut temp_map = serde_json::Map::new();
-		$(
-			temp_map.insert($key.to_string(), serde_json::Value::String($value.to_string()));
-		)+
-		temp_map
-	}};
-}
-
 #[tokio::main]
 async fn main() -> Result<()> {
 	let hc = httpc_test::new_client("http://localhost:8080")?;
 
+	
+	// -- Login
 	login(&hc).await?;
 
 
-	let params = map! {
-		"name" => "Test Customer",
-		"sender_id" => "abc123"
-	};
+	// region:    --- Create Customer
+	let params = json!({
+		"data": {
+			"name": "Test Customer",
+			"sender_id": "abc123"
+		}
+	});
 
 
 	let result = rpc_method(&hc, 1, "create_customer", &params).await?;
-
 	let id = result.json_value::<i64>("/result/data/id")?;
-	println!("Got ID: {id}");
-	let params = map! {
-		"id" => result.json_value::<i64>("/result/data/id")?,
-		"name" => "Edited"
-	};
+	// endregion: --- Create Customer
 
+	// region:    --- Update Customer
+	
+	let params = json!({
+		"id": id,
+		"data": {
+			"name": "Edited"
+		}
+	});
+	
 	rpc_method(&hc, 2, "update_customer", &params).await?;
+	
+	// endregion: --- Update Customer
 
+
+	// region:    --- Get Customer
+	// endregion: --- Get Customer
+
+	// region:    --- List Customers
+	// endregion: --- List Customers
+	
+	
+
+	// -- Logout
 	logout(&hc).await?;
-
 
 
 	Ok(())
@@ -56,13 +62,11 @@ async fn main() -> Result<()> {
 
 
 
-async fn rpc_method(hc: &Client, id: i64, method: &str, params: &Map<String, Value>) -> Result<Response> {
+async fn rpc_method(hc: &Client, id: i64, method: &str, params: &Value) -> Result<Response> {
 	let result = hc.do_post("/api/rpc", json!({
 		"id": id,
 		"method": method.to_string(),
-		"params": {
-			"data": params
-		}
+		"params": params
 	})).await?;
 	
 	result.print().await?;

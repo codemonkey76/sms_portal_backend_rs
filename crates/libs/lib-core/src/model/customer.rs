@@ -84,3 +84,65 @@ generate_common_bmc_fns!(
     ForUpdate: CustomerForUpdate,
     Filter: CustomerFilter
 );
+
+// region:    --- Tests
+
+#[cfg(test)]
+mod tests {
+    type Error = Box<dyn std::error::Error>;
+    type Result<T> = core::result::Result<T, Error>;
+
+    use super::*;
+    use crate::_dev_utils::{self, clean_customers};
+    use serial_test::serial;
+
+    #[serial]
+    #[tokio::test]
+    async fn test_create_ok() -> Result<()> {
+        let mm = _dev_utils::init_test().await;
+        let ctx = Ctx::root_ctx();
+        let fx_name = "test_create_ok customer 01";
+        let fx_sender_id = "test_create_ok";
+
+        // -- Exec
+        let fx_customer_c = CustomerForCreate {
+            name: fx_name.to_string(),
+            sender_id: fx_sender_id.to_string()
+        };
+
+        let customer_id = CustomerBmc::create(&ctx, &mm, fx_customer_c).await?;
+
+        // -- Check
+        let customer = CustomerBmc::get(&ctx, &mm, customer_id).await?;
+        assert_eq!(customer.name, fx_name);
+
+        // -- Clean
+        let count = clean_customers(&ctx, &mm, "test_create_ok").await?;
+		assert_eq!(count, 1, "Should have cleaned only 1 agent");
+
+        Ok(())
+    }
+
+    #[serial]
+    #[tokio::test]
+    async fn update_create_ok() -> Result<()> {
+        Ok(())
+    }
+
+    #[serial]
+    #[tokio::test]
+    async fn delete_create_ok() -> Result<()> {
+        Ok(())
+    }
+
+    #[serial]
+    #[tokio::test]
+    async fn list_create_ok() -> Result<()> {
+        Ok(())
+    }
+
+
+
+}
+
+// endregion: --- Tests

@@ -1,30 +1,3 @@
-//! rpc::router module provides the type and implementation for
-//! json rpc routing.
-//!
-//! It has the following constructs:
-//!
-//! - `RpcRouter` holds the HashMap of `method_name: Box<dyn RpcHandlerWrapperTrait>`.
-//! - `RpcHandler` trait is implemented for any async function that, with
-//!   `(S1, S2, ...[impl IntoParams])`, returns `web::Result<Serialize>` where S1, S2, ... are
-//!    types that implement `FromResources` (see router/from_resources.rs and src/resources.rs).
-//! - `IntoParams` is the trait to implement to instruct how to go from `Option<Value>` json-rpc params
-//!   to the handler's param types.
-//! - `IntoParams` has a default `into_params` implementation that will return an error if the params are missing.
-//!
-//! ```
-//! #[derive(Deserialize)]
-//! pub struct ParamsIded {
-//!   id: i64,
-//! }
-//!
-//! impl IntoParams for ParamsIded {}
-//! ```
-//!
-//! - For custom `IntoParams` behavior, implement the `IntoParams::into_params` function.
-//! - Implementing `IntoDefaultParams` on a type that implements `Default` will auto-implement `IntoParams`
-//!   and call `T::default()` when the params `Option<Value>` is None.
-//!
-
 // region:    --- Modules
 
 mod from_resources;
@@ -44,7 +17,6 @@ use serde::Deserialize;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::pin::Pin;
-
 // endregion: --- Modules
 
 /// The raw JSON-RPC request object, serving as the foundation for RPC routing.
@@ -72,16 +44,6 @@ impl RpcRouter {
 		}
 	}
 
-	/// Add a dyn_handler to the router.
-	///
-	/// ```
-	/// RpcRouter::new().add_dyn("method_name", my_handler_fn.into_dyn());
-	/// ```
-	///
-	/// Note: This is the preferred way to add handlers to the router, as it
-	///       avoids monomorphization of the add function.
-	///       The RpcRouter also has a `.add()` as a convenience function to just pass the function.
-	///       See `RpcRouter::add` for more details.
 	pub fn add_dyn(
 		mut self,
 		name: &'static str,
@@ -91,15 +53,7 @@ impl RpcRouter {
 		self
 	}
 
-	/// Add an handler function to the router.
-	///
-	/// ```
-	/// RpcRouter::new().add("method_name", my_handler_fn);
-	/// ```
-	///
-	/// Note: This is a convenient add function variant with generics,
-	///       and there will be monomorphed versions of this function
-	///       for each type passed. Use `RpcRouter::add_dyn` to avoid this.
+
 	pub fn add<F, T, P, R>(self, name: &'static str, handler: F) -> Self
 	where
 		F: RpcHandler<T, P, R> + Clone + Send + Sync + 'static,
@@ -129,27 +83,6 @@ impl RpcRouter {
 	}
 }
 
-/// A simple macro to create a new RpcRouter
-/// and add each rpc handler-compatible function along with their corresponding names.
-///
-/// e.g.,
-///
-/// ```
-/// rpc_router!(
-///   create_project,
-///   list_projects,
-///   update_project,
-///   delete_project
-/// );
-/// ```
-/// Is equivalent to:
-/// ```
-/// RpcRouter::new()
-///     .add_dyn("create_project", create_project.into_box())
-///     .add_dyn("list_projects", list_projects.into_box())
-///     .add_dyn("update_project", update_project.into_box())
-///     .add_dyn("delete_project", delete_project.into_box())
-/// ```
 #[macro_export]
 macro_rules! rpc_router {
     ($($fn_name:ident),+ $(,)?) => {

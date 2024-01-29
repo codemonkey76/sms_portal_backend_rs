@@ -1,6 +1,6 @@
 use crate::rpcs::prelude::*;
 use lib_core::model::customer::{
-	self, Customer, CustomerBmc, CustomerFilter, CustomerForCreate, CustomerForUpdate
+	Customer, CustomerBmc, CustomerFilter, CustomerForCreate, CustomerForUpdate
 };
 
 pub fn rpc_router() -> RpcRouter {

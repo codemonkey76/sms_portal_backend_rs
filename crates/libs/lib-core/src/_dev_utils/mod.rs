@@ -4,6 +4,7 @@ mod dev_db;
 
 use crate::ctx::Ctx;
 use crate::model::agent::{AgentBmc, AgentFilter, AgentForCreate};
+use crate::model::customer::{CustomerBmc, CustomerFilter, CustomerForCreate};
 use crate::model::conv::{ConvBmc, ConvForCreate};
 use crate::model::{self, ModelManager};
 use modql::filter::OpValString;
@@ -226,3 +227,66 @@ pub async fn clean_agents(
 }
 
 // endregion: --- Agent seed/clean
+
+
+// region:    --- Customer seed/clean
+
+pub async fn seed_customers(
+	ctx: &Ctx,
+	mm: &ModelManager,
+	params: &[(&str, &str)],
+) -> model::Result<Vec<i64>> {
+	let mut ids = Vec::new();
+
+	for (name, sender_id) in params {
+		let id = seed_customer(ctx, mm, name, sender_id).await?;
+		ids.push(id);
+	}
+
+	Ok(ids)
+}
+
+pub async fn seed_customer(
+	ctx: &Ctx,
+	mm: &ModelManager,
+	name: &str,
+	sender_id: &str,
+) -> model::Result<i64> {
+	CustomerBmc::create(
+		ctx,
+		mm,
+		CustomerForCreate {
+			name: name.to_string(),
+			sender_id: sender_id.to_string()
+		},
+	)
+	.await
+}
+
+/// Delete all customers that have their title contains contains_name
+pub async fn clean_customers(
+	ctx: &Ctx,
+	mm: &ModelManager,
+	contains_name: &str,
+) -> model::Result<usize> {
+	let customers = CustomerBmc::list(
+		ctx,
+		mm,
+		Some(vec![CustomerFilter {
+			name: Some(OpValString::Contains(contains_name.to_string()).into()),
+			sender_id: None,
+			..Default::default()
+		}]),
+		None,
+	)
+	.await?;
+	let count = customers.len();
+
+	for customer in customers {
+		CustomerBmc::delete(ctx, mm, customer.id).await?;
+	}
+
+	Ok(count)
+}
+
+// endregion: --- Customer seed/clean
