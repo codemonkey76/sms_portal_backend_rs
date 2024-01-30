@@ -93,7 +93,8 @@ mod tests {
     type Result<T> = core::result::Result<T, Error>;
 
     use super::*;
-    use crate::_dev_utils::{self, clean_customers};
+    use crate::{_dev_utils::{self, clean_customers, seed_customer, seed_customers}, model};
+    use serde_json::json;
     use serial_test::serial;
 
     #[serial]
@@ -118,26 +119,105 @@ mod tests {
 
         // -- Clean
         let count = clean_customers(&ctx, &mm, "test_create_ok").await?;
-		assert_eq!(count, 1, "Should have cleaned only 1 agent");
+		assert_eq!(count, 1, "Should have cleaned only 1 customer");
 
         Ok(())
     }
 
     #[serial]
     #[tokio::test]
-    async fn update_create_ok() -> Result<()> {
+    async fn test_update_ok() -> Result<()> {
+        // -- Setup & Fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+
+		let fx_name = "test_update_ok customer 01";
+        let fx_sender_id = "test_update_ok";
+		let fx_customer_id = seed_customer(&ctx, &mm, fx_name, fx_sender_id).await?;
+		let fx_name_updated = "test_update_ok customer 01 - updated";
+
+		// -- Exec
+		let fx_customer_u = CustomerForUpdate {
+			name: Some(fx_name_updated.to_string()),
+            sender_id: None
+		};
+		CustomerBmc::update(&ctx, &mm, fx_customer_id, fx_customer_u).await?;
+
+		// -- Check
+		let customer = CustomerBmc::get(&ctx, &mm, fx_customer_id).await?;
+		assert_eq!(customer.name, fx_name_updated);
+
+		// -- Clean
+		let count = clean_customers(&ctx, &mm, "test_update_ok customer").await?;
+		assert_eq!(count, 1, "Should have cleaned only 1 customer");
+
         Ok(())
     }
 
     #[serial]
     #[tokio::test]
-    async fn delete_create_ok() -> Result<()> {
+    async fn test_delete_ok() -> Result<()> {
+        // -- Setup & Fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+
+		let fx_name = "test_delete_ok customer 01";
+        let fx_sender_id = "test_delete_ok";
+		let fx_customer_id = seed_customer(&ctx, &mm, fx_name, fx_sender_id).await?;
+
+		// -- Exec
+		// check it's there
+		CustomerBmc::get(&ctx, &mm, fx_customer_id).await?;
+		// do the delete
+		CustomerBmc::delete(&ctx, &mm, fx_customer_id).await?;
+
+		// -- Check
+		let res = CustomerBmc::get(&ctx, &mm, fx_customer_id).await;
+		assert!(
+			matches!(&res, Err(model::Error::EntityNotFound { .. })),
+			"should return a EntityNotFound"
+		);
+
         Ok(())
     }
 
     #[serial]
     #[tokio::test]
-    async fn list_create_ok() -> Result<()> {
+    async fn test_list_ok() -> Result<()> {
+        // -- Setup & Fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+
+		let fx_customer_names = &[("test_list_ok customer 01", "cust_01"), ("test_list_ok customer 02", "cust_02")];
+		seed_customers(&ctx, &mm, fx_customer_names).await?;
+		let fx_asst_names = &[
+			("test_list_ok asst 01", "ass_01"),
+			("test_list_ok asst 02", "ass_02"),
+			("test_list_ok asst 03", "ass_03"),
+		];
+		seed_customers(&ctx, &mm, fx_asst_names).await?;
+
+		// -- Exec
+		let customer_filter: CustomerFilter = serde_json::from_value(json!(
+			{
+				"name": {"$contains": "list_ok customer"}
+			}
+		))?;
+		let customers =
+			CustomerBmc::list(&ctx, &mm, Some(vec![customer_filter]), None).await?;
+
+		// -- Check
+		assert_eq!(customers.len(), 2);
+		let names: Vec<String> = customers.iter().cloned().map(|a| a.name).collect::<Vec<_>>();
+        let fx_names: Vec<String> = fx_customer_names.iter().map(|(name,_)| name.to_string()).collect::<Vec<_>>();
+		assert_eq!(names, fx_names);
+
+		// -- Clean
+		let count = clean_customers(&ctx, &mm, "test_list_ok customer").await?;
+		assert_eq!(count, 2, "Should have cleaned 2 customers");
+		let count = clean_customers(&ctx, &mm, "test_list_ok asst").await?;
+		assert_eq!(count, 3, "Should have cleaned 3 assts");
+
         Ok(())
     }
 
