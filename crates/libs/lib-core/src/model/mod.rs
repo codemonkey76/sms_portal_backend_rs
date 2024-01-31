@@ -24,10 +24,9 @@ mod base;
 mod error;
 mod store;
 
-pub mod agent;
-pub mod conv;
-pub mod conv_msg;
-pub mod conv_user;
+pub mod list;
+pub mod contact;
+pub mod message;
 pub mod modql_utils;
 pub mod user;
 pub mod customer;
