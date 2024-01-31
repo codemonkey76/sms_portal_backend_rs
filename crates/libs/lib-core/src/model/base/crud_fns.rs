@@ -83,6 +83,7 @@ where
 	E: HasFields,
 {
 	// -- Build the query
+	
 	let mut query = Query::select();
 	query.from(MC::table_ref()).columns(E::field_column_refs());
 
@@ -95,7 +96,7 @@ where
 	// list options
 	let list_options = compute_list_options(list_options)?;
 	list_options.apply_to_sea_query(&mut query);
-
+	
 	// -- Execute the query
 	let (sql, values) = query.build_sqlx(PostgresQueryBuilder);
 

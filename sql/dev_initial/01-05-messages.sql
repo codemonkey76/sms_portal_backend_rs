@@ -9,11 +9,11 @@ CREATE TABLE messages (
     "status" varchar(255),
     "sid" varchar(255),
     is_mms boolean DEFAULT false,
-    is_archived boolean DEFAULT false
+    is_archived boolean DEFAULT false,
   
     -- FK
-    customer_id BIGINT NOT NULL
-    user_id BIGINT NOT NULL
+    customer_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
 
     -- Timestamps
     cid bigint NOT NULL,

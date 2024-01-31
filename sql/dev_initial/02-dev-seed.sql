@@ -8,7 +8,11 @@ INSERT INTO "users"
     (username, cid, ctime, mid, mtime) VALUES 
     ('demo1',  0,   now(), 0,   now());
 
--- Agent mock-01 (with 'parrot' model) (id: 100)
-INSERT INTO "agents"    
-    (id,  owner_id, name,      cid, ctime, mid, mtime) VALUES
-    (100, 0,        'mock-01', 0,   now(), 0,   now());
+-- Customer test-customer (id: 100)
+INSERT INTO "customers"    
+    (id,  name,            sender_id, is_active, cid, ctime, mid, mtime) VALUES
+    (100, 'test customer', 'abc123',  true,      0,   now(), 0,   now());
+
+INSERT INTO "customers"    
+    (id,  name,            sender_id, is_active, cid, ctime, mid, mtime) VALUES
+    (101, 'test customer 2', 'abc123',  true,      0,   now(), 0,   now());

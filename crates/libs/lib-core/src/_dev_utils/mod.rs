@@ -2,8 +2,10 @@
 
 mod dev_db;
 
+use fake::Dummy;
 use crate::ctx::Ctx;
 use crate::model::customer::{CustomerBmc, CustomerFilter, CustomerForCreate};
+use crate::model::contact::{ContactBmc, ContactFilter, ContactForCreate};
 use crate::model::{self, ModelManager};
 use modql::filter::OpValString;
 use tokio::sync::OnceCell;
@@ -165,3 +167,70 @@ pub async fn clean_customers(
 }
 
 // endregion: --- Customer seed/clean
+
+// region:    --- Contact seed/clean
+
+pub async fn seed_contacts(
+	ctx: &Ctx,
+	mm: &ModelManager,
+	params: &[(&str, &i64, &str)],
+) -> model::Result<Vec<i64>> {
+	let mut ids = Vec::new();
+
+	for (phone, customer_id, first_name) in params {
+		let id = seed_contact(ctx, mm, phone, customer_id, first_name).await?;
+		ids.push(id);
+	}
+
+	Ok(ids)
+}
+
+pub async fn seed_contact(
+	ctx: &Ctx,
+	mm: &ModelManager,
+	phone: &str,
+	customer_id: &i64,
+	first_name: &str
+) -> model::Result<i64> {
+	let faker = fake::Faker;
+	ContactBmc::create(
+		ctx,
+		mm,
+		ContactForCreate {
+			phone: phone.to_string(),
+            customer_id: *customer_id,
+			first_name: first_name.to_string(),
+            ..ContactForCreate::dummy(&faker)
+		},
+	)
+	.await
+}
+
+/// Delete all contacts that have their title contains contains_name
+pub async fn clean_contacts(
+	ctx: &Ctx,
+	mm: &ModelManager,
+	contains_first_name: &str,
+) -> model::Result<usize> {
+	let contacts = ContactBmc::list(
+		ctx,
+		mm,
+		Some(vec![ContactFilter {
+			first_name:Some(OpValString::Contains(contains_first_name.to_string()).into()),
+			..Default::default()
+		}]),
+		None,
+	)
+	.await?;
+	
+	let count = contacts.len();
+	
+
+	for contact in contacts {
+		ContactBmc::delete(ctx, mm, contact.id).await?;
+	}
+
+	Ok(count)
+}
+
+// endregion: --- contact seed/clean

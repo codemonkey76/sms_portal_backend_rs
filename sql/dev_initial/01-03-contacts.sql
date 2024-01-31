@@ -8,7 +8,7 @@ CREATE TABLE contacts (
     company_name varchar(255) NOT NULL,
   
     -- FK
-    customer_id BIGINT NOT NULL
+    customer_id BIGINT NOT NULL,
 
     -- Timestamps
     cid bigint NOT NULL,
